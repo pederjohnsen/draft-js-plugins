@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import { genKey } from 'draft-js';
+import { emojiIndex } from '@tunoltd/emoji-mart';
+
 import Entry from './Entry';
 import addEmoji, { Mode as AddEmojiMode } from '../../modifiers/addEmoji';
 import getSearchText from '../../utils/getSearchText';
 import decodeOffsetKey from '../../utils/decodeOffsetKey';
-
 
 export default class EmojiSuggestions extends Component {
 
@@ -190,7 +191,7 @@ export default class EmojiSuggestions extends Component {
     this.closeDropdown();
     const newEditorState = addEmoji(
       this.props.store.getEditorState(),
-      emoji,
+      emoji.native,
       AddEmojiMode.REPLACE,
     );
     this.props.store.setEditorState(newEditorState);
@@ -210,15 +211,21 @@ export default class EmojiSuggestions extends Component {
     const selection = this.props.store.getEditorState().getSelection();
     const { word } = getSearchText(this.props.store.getEditorState(), selection);
     const emojiValue = word.substring(1, word.length).toLowerCase();
-    const filteredValues = this.props.shortNames.filter((emojiShortName) => (
-      !emojiValue || emojiShortName.indexOf(emojiValue) > -1
-    ));
-    const size = filteredValues.size < 9 ? filteredValues.size : 9;
-    return filteredValues.setSize(size);
+
+    if (emojiValue.length === 0) {
+      return [
+        emojiIndex.search('+1')[0],
+        emojiIndex.search('-1')[0],
+        emojiIndex.search('white_check_mark')[0],
+        emojiIndex.search('100')[0],
+      ];
+    }
+
+    return emojiIndex.search(emojiValue).slice(0, 9);
   };
 
   commitSelection = () => {
-    this.onEmojiSelect(this.filteredEmojis.get(this.state.focusedOptionIndex));
+    this.onEmojiSelect(this.filteredEmojis[this.state.focusedOptionIndex]);
     return 'handled';
   };
 
@@ -275,18 +282,15 @@ export default class EmojiSuggestions extends Component {
     this.filteredEmojis = this.getEmojisForFilter();
     const {
       theme = {},
-      cacheBustParam,
-      imagePath,
-      imageType,
       ariaProps, // eslint-disable-line no-unused-vars
       callbacks, // eslint-disable-line no-unused-vars
       onClose, // eslint-disable-line no-unused-vars
       onOpen, // eslint-disable-line no-unused-vars
       onSearchChange, // eslint-disable-line no-unused-vars
       positionSuggestions, // eslint-disable-line no-unused-vars
-      shortNames, // eslint-disable-line no-unused-vars
       store, // eslint-disable-line no-unused-vars
       useNativeArt,
+      emojiSet,
       ...restProps,
     } = this.props;
     return (
@@ -299,6 +303,7 @@ export default class EmojiSuggestions extends Component {
           this.popover = element;
         }}
       >
+        <div>test test test test</div>
         {
           this.filteredEmojis.map((emoji, index) => (
             <Entry
@@ -310,12 +315,10 @@ export default class EmojiSuggestions extends Component {
               index={index}
               id={`emoji-option-${this.key}-${index}`}
               theme={theme}
-              imagePath={imagePath}
-              imageType={imageType}
-              cacheBustParam={cacheBustParam}
               useNativeArt={useNativeArt}
+              emojiSet={emojiSet}
             />
-          )).toJS()
+          ))
         }
       </div>
     );
