@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import { genKey } from 'draft-js';
+import { NimbleEmojiIndex } from '@tunoltd/emoji-mart';
+import emojiData from '@tunoltd/emoji-mart/data/all';
+
 import Entry from './Entry';
 import addEmoji, { Mode as AddEmojiMode } from '../../modifiers/addEmoji';
 import getSearchText from '../../utils/getSearchText';
 import decodeOffsetKey from '../../utils/decodeOffsetKey';
-
 
 export default class EmojiSuggestions extends Component {
 
@@ -23,7 +25,7 @@ export default class EmojiSuggestions extends Component {
       // In case the list shrinks there should be still an option focused.
       // Note: this might run multiple times and deduct 1 until the condition is
       // not fullfilled anymore.
-      const size = this.filteredEmojis.size;
+      const size = this.filteredEmojis.length;
       if (size > 0 && this.state.focusedOptionIndex >= size) {
         this.setState({
           focusedOptionIndex: size - 1,
@@ -74,6 +76,9 @@ export default class EmojiSuggestions extends Component {
     const anchorOffset = selection.getAnchorOffset();
 
     // the list should not be visible if a range is selected or the editor has no focus
+    console.log('##tests');
+    console.log(`#!selection.isCollapsed(): ${!selection.isCollapsed()}`);
+    console.log(`#!selection.getHasFocus(): ${!selection.getHasFocus()}`);
     if (!selection.isCollapsed() || !selection.getHasFocus()) return removeList();
 
     // identify the start & end positon of each search-text
@@ -87,6 +92,9 @@ export default class EmojiSuggestions extends Component {
           .getBlockTree(blockKey)
           .getIn([decoratorKey, 'leaves', leafKey])
       ));
+
+    console.log('##leaves?');
+    console.log(leaves);
 
     // if all leaves are undefined the popover should be removed
     if (leaves.every((leave) => leave === undefined)) {
@@ -109,7 +117,10 @@ export default class EmojiSuggestions extends Component {
            (anchorOffset > start + 1
          && anchorOffset <= end) // : is in the text or at the end
       ));
-    if (selectionIsInsideWord.every((isInside) => isInside === false)) return removeList();
+    if (selectionIsInsideWord.every((isInside) => isInside === false)) {
+      console.log('##isInside is false?!!');
+      return removeList();
+    }
 
     this.activeOffsetKey = selectionIsInsideWord
       .filter((value) => value === true)
@@ -156,7 +167,7 @@ export default class EmojiSuggestions extends Component {
   onDownArrow = (keyboardEvent) => {
     keyboardEvent.preventDefault();
     const newIndex = this.state.focusedOptionIndex + 1;
-    this.onEmojiFocus(newIndex >= this.filteredEmojis.size ? 0 : newIndex);
+    this.onEmojiFocus(newIndex >= this.filteredEmojis.length ? 0 : newIndex);
   };
 
   onTab = (keyboardEvent) => {
@@ -166,7 +177,7 @@ export default class EmojiSuggestions extends Component {
 
   onUpArrow = (keyboardEvent) => {
     keyboardEvent.preventDefault();
-    if (this.filteredEmojis.size > 0) {
+    if (this.filteredEmojis.length > 0) {
       const newIndex = this.state.focusedOptionIndex - 1;
       this.onEmojiFocus(Math.max(newIndex, 0));
     }
@@ -187,10 +198,12 @@ export default class EmojiSuggestions extends Component {
   };
 
   onEmojiSelect = (emoji) => {
+    console.log('###onEmojiSelect');
+    console.log(emoji);
     this.closeDropdown();
     const newEditorState = addEmoji(
       this.props.store.getEditorState(),
-      emoji,
+      emoji.native,
       AddEmojiMode.REPLACE,
     );
     this.props.store.setEditorState(newEditorState);
@@ -210,19 +223,32 @@ export default class EmojiSuggestions extends Component {
     const selection = this.props.store.getEditorState().getSelection();
     const { word } = getSearchText(this.props.store.getEditorState(), selection);
     const emojiValue = word.substring(1, word.length).toLowerCase();
-    const filteredValues = this.props.shortNames.filter((emojiShortName) => (
-      !emojiValue || emojiShortName.indexOf(emojiValue) > -1
-    ));
-    const size = filteredValues.size < 9 ? filteredValues.size : 9;
-    return filteredValues.setSize(size);
+    const emojiIndex = new NimbleEmojiIndex(emojiData, this.props.emojiSet);
+
+    if (emojiValue.length === 0) {
+      console.log('####HMMMM');
+      console.log(emojiIndex.search('+1'));
+      console.log(emojiIndex.search('-1'));
+      console.log(emojiIndex.search('white_check_mark'));
+      console.log(emojiIndex.search('100'));
+      return [
+        emojiIndex.search('+1')[0],
+        emojiIndex.search('-1')[0],
+        emojiIndex.search('white_check_mark')[0],
+        emojiIndex.search('100')[0],
+      ];
+    }
+
+    return emojiIndex.search(emojiValue).slice(0, 9);
   };
 
   commitSelection = () => {
-    this.onEmojiSelect(this.filteredEmojis.get(this.state.focusedOptionIndex));
+    this.onEmojiSelect(this.filteredEmojis[this.state.focusedOptionIndex]);
     return 'handled';
   };
 
   openDropdown = () => {
+    console.log('####openDropdown?');
     // This is a really nasty way of attaching & releasing the key related functions.
     // It assumes that the keyFunctions object will not loose its reference and
     // by this we can replace inner parameters spread over different modules.
@@ -248,6 +274,7 @@ export default class EmojiSuggestions extends Component {
   };
 
   closeDropdown = () => {
+    console.log('####closeDropdown?');
     // make sure none of these callbacks are triggered
     this.props.callbacks.onDownArrow = undefined;
     this.props.callbacks.onUpArrow = undefined;
@@ -275,18 +302,15 @@ export default class EmojiSuggestions extends Component {
     this.filteredEmojis = this.getEmojisForFilter();
     const {
       theme = {},
-      cacheBustParam,
-      imagePath,
-      imageType,
       ariaProps, // eslint-disable-line no-unused-vars
       callbacks, // eslint-disable-line no-unused-vars
       onClose, // eslint-disable-line no-unused-vars
       onOpen, // eslint-disable-line no-unused-vars
       onSearchChange, // eslint-disable-line no-unused-vars
       positionSuggestions, // eslint-disable-line no-unused-vars
-      shortNames, // eslint-disable-line no-unused-vars
       store, // eslint-disable-line no-unused-vars
       useNativeArt,
+      emojiSet,
       ...restProps,
     } = this.props;
     return (
@@ -302,7 +326,7 @@ export default class EmojiSuggestions extends Component {
         {
           this.filteredEmojis.map((emoji, index) => (
             <Entry
-              key={emoji}
+              key={emoji.id}
               onEmojiSelect={this.onEmojiSelect}
               onEmojiFocus={this.onEmojiFocus}
               isFocused={this.state.focusedOptionIndex === index}
@@ -310,12 +334,10 @@ export default class EmojiSuggestions extends Component {
               index={index}
               id={`emoji-option-${this.key}-${index}`}
               theme={theme}
-              imagePath={imagePath}
-              imageType={imageType}
-              cacheBustParam={cacheBustParam}
               useNativeArt={useNativeArt}
+              emojiSet={emojiSet}
             />
-          )).toJS()
+            ))
         }
       </div>
     );

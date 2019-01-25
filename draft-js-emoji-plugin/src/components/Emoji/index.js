@@ -1,37 +1,36 @@
 import React from 'react';
 import unionClassNames from 'union-class-names';
-import emojione from 'emojione';
+import { Emoji, getEmojiDataFromNative } from '@tunoltd/emoji-mart';
+import data from '@tunoltd/emoji-mart/data/all.json';
 
-const Emoji = ({ theme = {}, cacheBustParam, imagePath, imageType, className, decoratedText, useNativeArt, ...props }) => {
-  const shortName = emojione.toShort(decoratedText);
+const EmojiComponent = ({ theme = {}, className, decoratedText, emojiSet, useNativeArt, ...props }) => {
+  const emojiData = getEmojiDataFromNative(decoratedText, emojiSet, data);
 
   let emojiDisplay = null;
   if (useNativeArt === true) {
     emojiDisplay = (
       <span
-        title={emojione.toShort(decoratedText)}
+        title={emojiData.name}
       >
         {props.children}
       </span>
     );
   } else {
-    // short name to image url code steal from emojione source code
-    const shortNameForImage = emojione.emojioneList[shortName].unicode[emojione.emojioneList[shortName].unicode.length - 1];
-    const backgroundImage = `url(${imagePath}${shortNameForImage}.${imageType}${cacheBustParam})`;
     const combinedClassName = unionClassNames(theme.emoji, className);
 
     emojiDisplay = (
-      <span
+      <Emoji
         className={combinedClassName}
-        title={emojione.toShort(decoratedText)}
-        style={{ backgroundImage }}
-      >
-        {props.children}
-      </span>
+        set={emojiSet}
+        skin={emojiData.skin || 0}
+        emoji={emojiData}
+        size={15}
+        tooltip
+      >{props.children}</Emoji>
     );
   }
 
   return emojiDisplay;
 };
 
-export default Emoji;
+export default EmojiComponent;
