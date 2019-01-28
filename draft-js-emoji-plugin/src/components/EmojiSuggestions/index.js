@@ -117,6 +117,15 @@ export default class EmojiSuggestions extends Component {
            (anchorOffset > start + 1
          && anchorOffset <= end) // : is in the text or at the end
       ));
+    console.log('#NO NO NO NO!! NO!!! NO! NO!!! PLEASE NO!!!');
+    console.log(`plainText: ${plainText}`);
+    console.log(`plainText.length: ${plainText.length}`);
+    console.log('selectionIsInsideWord');
+    console.log(selectionIsInsideWord);
+    console.log('selection:');
+    console.log(selection);
+    console.log('anchorOffset:');
+    console.log(anchorOffset);
     if (selectionIsInsideWord.every((isInside) => isInside === false)) {
       console.log('##isInside is false?!!');
       return removeList();
@@ -226,11 +235,6 @@ export default class EmojiSuggestions extends Component {
     const emojiIndex = new NimbleEmojiIndex(emojiData, this.props.emojiSet);
 
     if (emojiValue.length === 0) {
-      console.log('####HMMMM');
-      console.log(emojiIndex.search('+1'));
-      console.log(emojiIndex.search('-1'));
-      console.log(emojiIndex.search('white_check_mark'));
-      console.log(emojiIndex.search('100'));
       return [
         emojiIndex.search('+1')[0],
         emojiIndex.search('-1')[0],
