@@ -76,9 +76,6 @@ export default class EmojiSuggestions extends Component {
     const anchorOffset = selection.getAnchorOffset();
 
     // the list should not be visible if a range is selected or the editor has no focus
-    console.log('##tests');
-    console.log(`#!selection.isCollapsed(): ${!selection.isCollapsed()}`);
-    console.log(`#!selection.getHasFocus(): ${!selection.getHasFocus()}`);
     if (!selection.isCollapsed() || !selection.getHasFocus()) return removeList();
 
     // identify the start & end positon of each search-text
@@ -92,9 +89,6 @@ export default class EmojiSuggestions extends Component {
           .getBlockTree(blockKey)
           .getIn([decoratorKey, 'leaves', leafKey])
       ));
-
-    console.log('##leaves?');
-    console.log(leaves);
 
     // if all leaves are undefined the popover should be removed
     if (leaves.every((leave) => leave === undefined)) {
@@ -117,17 +111,7 @@ export default class EmojiSuggestions extends Component {
            (anchorOffset > start + 1
          && anchorOffset <= end) // : is in the text or at the end
       ));
-    console.log('#NO NO NO NO!! NO!!! NO! NO!!! PLEASE NO!!!');
-    console.log(`plainText: ${plainText}`);
-    console.log(`plainText.length: ${plainText.length}`);
-    console.log('selectionIsInsideWord');
-    console.log(selectionIsInsideWord);
-    console.log('selection:');
-    console.log(selection);
-    console.log('anchorOffset:');
-    console.log(anchorOffset);
     if (selectionIsInsideWord.every((isInside) => isInside === false)) {
-      console.log('##isInside is false?!!');
       return removeList();
     }
 
@@ -207,8 +191,6 @@ export default class EmojiSuggestions extends Component {
   };
 
   onEmojiSelect = (emoji) => {
-    console.log('###onEmojiSelect');
-    console.log(emoji);
     this.closeDropdown();
     const newEditorState = addEmoji(
       this.props.store.getEditorState(),
@@ -252,7 +234,6 @@ export default class EmojiSuggestions extends Component {
   };
 
   openDropdown = () => {
-    console.log('####openDropdown?');
     // This is a really nasty way of attaching & releasing the key related functions.
     // It assumes that the keyFunctions object will not loose its reference and
     // by this we can replace inner parameters spread over different modules.
@@ -278,7 +259,6 @@ export default class EmojiSuggestions extends Component {
   };
 
   closeDropdown = () => {
-    console.log('####closeDropdown?');
     // make sure none of these callbacks are triggered
     this.props.callbacks.onDownArrow = undefined;
     this.props.callbacks.onUpArrow = undefined;

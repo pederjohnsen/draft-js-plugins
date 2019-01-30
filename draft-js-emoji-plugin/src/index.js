@@ -96,8 +96,6 @@ export default (config = {}) => {
 
   const pickerProps = {
     onClick(emoji) {
-      console.log('###onEmojiSelect');
-      console.log(emoji);
       const newEditorState = addEmoji(
         store.getEditorState(),
         emoji.native,
