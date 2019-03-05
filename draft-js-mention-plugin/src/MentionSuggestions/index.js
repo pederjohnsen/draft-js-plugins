@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { genKey } from 'draft-js';
 import escapeRegExp from 'lodash.escaperegexp';
 import Entry from './Entry';
-import addMention from '../modifiers/addMention';
+import addMention, { Mode as AddMentionMode } from '../modifiers/addMention';
 import decodeOffsetKey from '../utils/decodeOffsetKey';
 import getSearchText from '../utils/getSearchText';
 import defaultEntryComponent from './Entry/defaultEntryComponent';
@@ -231,6 +231,7 @@ export class MentionSuggestions extends Component {
       this.props.mentionPrefix,
       this.props.mentionTrigger,
       this.props.entityMutability,
+      AddMentionMode.REPLACE,
     );
     this.props.store.setEditorState(newEditorState);
   };
