@@ -7,10 +7,10 @@ const EmojiComponent = ({ theme = {}, className, decoratedText, emojiSet, useNat
   const emojiData = getEmojiDataFromNative(decoratedText, emojiSet, data);
 
   let emojiDisplay = null;
-  if (useNativeArt === true) {
+  if (useNativeArt === true || !emojiData) {
     emojiDisplay = (
       <span
-        title={emojiData.name}
+        title={emojiData ? emojiData.name : decoratedText}
       >
         {props.children}
       </span>
