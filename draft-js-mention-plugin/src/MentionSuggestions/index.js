@@ -183,7 +183,7 @@ export class MentionSuggestions extends Component {
   onDownArrow = (keyboardEvent) => {
     keyboardEvent.preventDefault();
     const newIndex = this.state.focusedOptionIndex + 1;
-    this.onMentionFocus(newIndex >= this.props.suggestions.length ? 0 : newIndex);
+    this.onMentionFocus(newIndex >= this.props.suggestions.length ? 0 : newIndex, true);
   };
 
   onTab = (keyboardEvent) => {
@@ -195,7 +195,7 @@ export class MentionSuggestions extends Component {
     keyboardEvent.preventDefault();
     if (this.props.suggestions.length > 0) {
       const newIndex = this.state.focusedOptionIndex - 1;
-      this.onMentionFocus(newIndex < 0 ? this.props.suggestions.length - 1 : newIndex);
+      this.onMentionFocus(newIndex < 0 ? this.props.suggestions.length - 1 : newIndex, true);
     }
   };
 
@@ -236,16 +236,44 @@ export class MentionSuggestions extends Component {
     this.props.store.setEditorState(newEditorState);
   };
 
-  onMentionFocus = (index) => {
+  onMentionFocus = (index, onKeyPress = false) => {
     const descendant = `mention-option-${this.key}-${index}`;
     this.props.ariaProps.ariaActiveDescendantID = descendant;
     this.setState({
       focusedOptionIndex: index,
+    }, () => {
+      // Only ensure focused suggestion is visible on key press up / down
+      if (onKeyPress) {
+        this.ensureFocusedSuggestionIsVisible();
+      }
     });
 
     // to force a re-render of the outer component to change the aria props
     this.props.store.setEditorState(this.props.store.getEditorState());
   };
+
+  ensureFocusedSuggestionIsVisible = () => {
+    if (this.focusedItem) {
+      const { focusedItem, popover } = this;
+
+      const itemOffsetRelativeToContainer = (
+        focusedItem.offsetParent === popover
+        ? focusedItem.offsetTop
+        : focusedItem.offsetTop - popover.offsetTop);
+
+      let { scrollTop } = popover;  // Top of visible area
+      if (itemOffsetRelativeToContainer < scrollTop) {
+        // Item is off the top of visible area. Scroll so it is topmost item.
+        scrollTop = itemOffsetRelativeToContainer;
+      } else if (itemOffsetRelativeToContainer + focusedItem.offsetHeight > scrollTop + popover.offsetHeight) {
+        // Item is off bottom of visible area. Scroll so it is at bottom.
+        scrollTop = (itemOffsetRelativeToContainer + focusedItem.offsetHeight) - popover.offsetHeight;
+      }
+      if (scrollTop !== popover.scrollTop) {
+        popover.scrollTop = scrollTop;
+      }
+    }
+  }
 
   commitSelection = () => {
     if (!this.props.store.getIsOpened()) {
@@ -334,19 +362,21 @@ export class MentionSuggestions extends Component {
         ref: (element) => { this.popover = element; },
       },
       this.props.suggestions.map((mention, index) => (
-        <Entry
-          key={mention.id != null ? mention.id : mention.name}
-          onMentionSelect={this.onMentionSelect}
-          onMentionFocus={this.onMentionFocus}
-          isFocused={this.state.focusedOptionIndex === index}
-          mention={mention}
-          index={index}
-          id={`mention-option-${this.key}-${index}`}
-          theme={theme}
-          searchValue={this.lastSearchValue}
-          entryComponent={entryComponent || defaultEntryComponent}
-        />
-      ))
+        <div ref={this.state.focusedOptionIndex === index ? (element) => { this.focusedItem = element; } : null}>
+          <Entry
+            key={mention.id != null ? mention.id : mention.name}
+            onMentionSelect={this.onMentionSelect}
+            onMentionFocus={this.onMentionFocus}
+            isFocused={this.state.focusedOptionIndex === index}
+            mention={mention}
+            index={index}
+            id={`mention-option-${this.key}-${index}`}
+            theme={theme}
+            searchValue={this.lastSearchValue}
+            entryComponent={entryComponent || defaultEntryComponent}
+          />
+        </div>
+        ))
     );
   }
 }
