@@ -32,6 +32,13 @@ export default class EmojiSuggestions extends Component {
         });
       }
 
+      // Note: this is a simple protection for the error when componentDidUpdate
+      // try to get new getPortalClientRect, but the key already was deleted by
+      // previous action.
+      if (!this.props.store.getAllSearches().has(this.activeOffsetKey)) {
+        return;
+      }
+
       if (size <= 0) {
         this.closeDropdown();
       }
@@ -229,6 +236,10 @@ export default class EmojiSuggestions extends Component {
   };
 
   commitSelection = () => {
+    if (!this.props.store.getIsOpened()) {
+      return 'not-handled';
+    }
+
     this.onEmojiSelect(this.filteredEmojis[this.state.focusedOptionIndex]);
     return 'handled';
   };
