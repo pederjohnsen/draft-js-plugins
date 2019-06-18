@@ -157,6 +157,7 @@ export default (config = {}) => {
     onEscape: (keyboardEvent) => callbacks.onEscape && callbacks.onEscape(keyboardEvent),
     handleReturn: (keyboardEvent) => callbacks.handleReturn && callbacks.handleReturn(keyboardEvent),
     onChange: (editorState) => {
+      const currentSelectionState = editorState.getSelection();
       let newEditorState = attachImmutableEntitiesToEmojis(editorState);
 
       if (!newEditorState.getCurrentContent().equals(editorState.getCurrentContent())) {
@@ -166,7 +167,7 @@ export default (config = {}) => {
         // the contenteditable.
         newEditorState = EditorState.forceSelection(
           newEditorState,
-          newEditorState.getSelection(),
+          currentSelectionState,
         );
       }
 
