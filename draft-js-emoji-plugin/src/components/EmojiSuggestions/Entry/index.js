@@ -44,7 +44,7 @@ export default class Entry extends Component {
       emojiDisplay = (
         <Emoji
           set={emojiSet}
-          skin={this.props.emoji.skin || 0}
+          skin={this.props.emoji.skin || 1}
           emoji={this.props.emoji}
           size={18}
           tooltip

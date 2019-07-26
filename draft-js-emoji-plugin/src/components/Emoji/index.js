@@ -22,7 +22,7 @@ const EmojiComponent = ({ theme = {}, className, decoratedText, emojiSet, useNat
       <Emoji
         className={combinedClassName}
         set={emojiSet}
-        skin={emojiData.skin || 0}
+        skin={emojiData.skin || 1}
         emoji={emojiData}
         size={15}
         tooltip
