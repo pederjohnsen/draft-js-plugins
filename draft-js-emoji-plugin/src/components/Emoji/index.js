@@ -26,6 +26,7 @@ const EmojiComponent = ({ theme = {}, className, decoratedText, emojiSet, useNat
         emoji={emojiData}
         size={15}
         tooltip
+        img
       >{props.children}</Emoji>
     );
   }
