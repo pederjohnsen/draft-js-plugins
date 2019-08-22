@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { genKey } from 'draft-js';
 import escapeRegExp from 'lodash/escapeRegExp';
 import Entry from './Entry';
-import addMention from '../modifiers/addMention';
+import addMention, { Mode as AddMentionMode } from '../modifiers/addMention';
 import decodeOffsetKey from '../utils/decodeOffsetKey';
 import getSearchText from '../utils/getSearchText';
 import defaultEntryComponent from './Entry/defaultEntryComponent';
@@ -212,7 +212,8 @@ export class MentionSuggestions extends Component {
     keyboardEvent.preventDefault();
     const newIndex = this.state.focusedOptionIndex + 1;
     this.onMentionFocus(
-      newIndex >= this.props.suggestions.length ? 0 : newIndex
+      newIndex >= this.props.suggestions.length ? 0 : newIndex,
+      true
     );
   };
 
@@ -226,7 +227,8 @@ export class MentionSuggestions extends Component {
     if (this.props.suggestions.length > 0) {
       const newIndex = this.state.focusedOptionIndex - 1;
       this.onMentionFocus(
-        newIndex < 0 ? this.props.suggestions.length - 1 : newIndex
+        newIndex < 0 ? this.props.suggestions.length - 1 : newIndex,
+        true
       );
     }
   };
@@ -262,20 +264,58 @@ export class MentionSuggestions extends Component {
       mention,
       this.props.mentionPrefix,
       this.props.mentionTrigger,
-      this.props.entityMutability
+      this.props.entityMutability,
+      AddMentionMode.REPLACE
     );
     this.props.store.setEditorState(newEditorState);
   };
 
-  onMentionFocus = index => {
+  onMentionFocus = (index, onKeyPress = false) => {
     const descendant = `mention-option-${this.key}-${index}`;
     this.props.ariaProps.ariaActiveDescendantID = descendant;
-    this.setState({
-      focusedOptionIndex: index,
-    });
+    this.setState(
+      {
+        focusedOptionIndex: index,
+      },
+      () => {
+        // Only ensure focused suggestion is visible on key press up / down
+        if (onKeyPress) {
+          this.ensureFocusedSuggestionIsVisible();
+        }
+      }
+    );
 
     // to force a re-render of the outer component to change the aria props
     this.props.store.setEditorState(this.props.store.getEditorState());
+  };
+
+  ensureFocusedSuggestionIsVisible = () => {
+    if (this.focusedItem) {
+      const { focusedItem, popover } = this;
+
+      const itemOffsetRelativeToContainer =
+        focusedItem.offsetParent === popover
+          ? focusedItem.offsetTop
+          : focusedItem.offsetTop - popover.offsetTop;
+
+      let { scrollTop } = popover; // Top of visible area
+      if (itemOffsetRelativeToContainer < scrollTop) {
+        // Item is off the top of visible area. Scroll so it is topmost item.
+        scrollTop = itemOffsetRelativeToContainer;
+      } else if (
+        itemOffsetRelativeToContainer + focusedItem.offsetHeight >
+        scrollTop + popover.offsetHeight
+      ) {
+        // Item is off bottom of visible area. Scroll so it is at bottom.
+        scrollTop =
+          itemOffsetRelativeToContainer +
+          focusedItem.offsetHeight -
+          popover.offsetHeight;
+      }
+      if (scrollTop !== popover.scrollTop) {
+        popover.scrollTop = scrollTop;
+      }
+    }
   };
 
   commitSelection = () => {
@@ -379,18 +419,28 @@ export class MentionSuggestions extends Component {
         },
       },
       this.props.suggestions.map((mention, index) => (
-        <Entry
-          key={mention.id != null ? mention.id : mention.name}
-          onMentionSelect={this.onMentionSelect}
-          onMentionFocus={this.onMentionFocus}
-          isFocused={this.state.focusedOptionIndex === index}
-          mention={mention}
-          index={index}
-          id={`mention-option-${this.key}-${index}`}
-          theme={theme}
-          searchValue={this.lastSearchValue}
-          entryComponent={entryComponent || defaultEntryComponent}
-        />
+        <div
+          ref={
+            this.state.focusedOptionIndex === index
+              ? element => {
+                  this.focusedItem = element;
+                }
+              : null
+          }
+        >
+          <Entry
+            key={mention.id != null ? mention.id : mention.name}
+            onMentionSelect={this.onMentionSelect}
+            onMentionFocus={this.onMentionFocus}
+            isFocused={this.state.focusedOptionIndex === index}
+            mention={mention}
+            index={index}
+            id={`mention-option-${this.key}-${index}`}
+            theme={theme}
+            searchValue={this.lastSearchValue}
+            entryComponent={entryComponent || defaultEntryComponent}
+          />
+        </div>
       ))
     );
   }
