@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## To be released
+
+- Migrate styles to linaria
+- Hide internals in single bundle
+- Add esm support
+
 ## 2.0.3
 
 - Allow draft-js v0.11
@@ -24,6 +30,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Instead of passing in the `editorState` and the `onChange` function is not necessary anymore. This is now handled by the plugin itself via a shared reference passed to the components.
 
 ## 0.0.5 - 2016-03-25
+
 ### Released the first working version of DraftJS Undo Plugin
 
 It's not recommended to use the version 0.0.0 - 0.0.4
