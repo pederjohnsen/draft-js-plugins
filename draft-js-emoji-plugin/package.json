@@ -1,6 +1,6 @@
 {
   "name": "@tunoltd/draft-js-emoji-plugin",
-  "version": "2.1.15",
+  "version": "2.1.16",
   "description": "Emoji Plugin for DraftJS",
   "author": {
     "name": "Nik Graf",
@@ -36,7 +36,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@tunoltd/emoji-mart": "^2.11.2",
+    "@tunoltd/emoji-mart": "^3.0.0",
     "clsx": "^1.0.4",
     "find-with-regex": "^1.1.3",
     "immutable": "~3.7.4",
