@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { genKey } from 'draft-js';
 import { NimbleEmojiIndex } from '@tunoltd/emoji-mart';
-import emojiData from '@tunoltd/emoji-mart/data/all';
 
 import Entry from './Entry';
 import addEmoji, { Mode as AddEmojiMode } from '../../modifiers/addEmoji';
@@ -228,6 +227,8 @@ export default class EmojiSuggestions extends Component {
 
   // Get the first 6 emojis that match
   getEmojisForFilter = () => {
+    const { emojiData } = this.props;
+
     const selection = this.props.store.getEditorState().getSelection();
     const { word } = getSearchText(
       this.props.store.getEditorState(),

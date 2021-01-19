@@ -1,7 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
 import { Emoji, getEmojiDataFromNative } from '@tunoltd/emoji-mart';
-import data from '@tunoltd/emoji-mart/data/all.json';
 
 const EmojiComponent = ({
   theme = {},
@@ -9,6 +8,7 @@ const EmojiComponent = ({
   decoratedText,
   emojiSet,
   useNativeArt,
+  emojiData: data,
   ...props
 }) => {
   const emojiData = getEmojiDataFromNative(decoratedText, emojiSet, data);

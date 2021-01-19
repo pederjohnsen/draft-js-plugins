@@ -1,7 +1,8 @@
 import React from 'react';
 import { Map } from 'immutable';
 import { EditorState } from 'draft-js';
-import { Picker } from '@tunoltd/emoji-mart';
+import { NimblePicker } from '@tunoltd/emoji-mart';
+import defaultEmojiData from '@tunoltd/emoji-mart/data/all';
 
 import Emoji from './components/Emoji';
 import EmojiSuggestions from './components/EmojiSuggestions';
@@ -95,6 +96,7 @@ export default (config = {}) => {
     positionSuggestions = defaultPositionSuggestions,
     useNativeArt,
     emojiSet = 'google',
+    emojiData = defaultEmojiData,
   } = config;
 
   const pickerProps = {
@@ -103,6 +105,7 @@ export default (config = {}) => {
       store.setEditorState(newEditorState);
     },
     set: emojiSet,
+    data: emojiData,
   };
   const suggestionsProps = {
     ariaProps,
@@ -112,16 +115,20 @@ export default (config = {}) => {
     positionSuggestions,
     useNativeArt,
     emojiSet,
+    emojiData,
   };
   const emojiProps = {
     theme,
     useNativeArt,
     emojiSet,
+    emojiData,
   };
   const DecoratedEmojiSuggestions = props => (
     <EmojiSuggestions {...props} {...suggestionsProps} />
   );
-  const DecoratedEmojiSelect = props => <Picker {...props} {...pickerProps} />;
+  const DecoratedEmojiSelect = props => (
+    <NimblePicker {...props} {...pickerProps} />
+  );
   const DecoratedEmoji = props => <Emoji {...props} {...emojiProps} />;
   const DecoratedEmojiSuggestionsPortal = props => (
     <EmojiSuggestionsPortal {...props} store={store} />
